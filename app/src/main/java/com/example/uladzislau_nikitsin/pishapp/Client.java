@@ -15,7 +15,7 @@ public class Client extends AsyncTask<Void, Void, Void>{
     private final String ip;
     private final int port;
     private final TextView responseTextView;
-    private String response;
+    private String response = "";
 
     public Client(final String ip, final int port, final TextView responseTextView) {
         this.ip = ip;
@@ -64,5 +64,4 @@ public class Client extends AsyncTask<Void, Void, Void>{
         responseTextView.setText(response);
         super.onPostExecute(results);
     }
-
 }
