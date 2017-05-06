@@ -5,40 +5,18 @@
               android:orientation="vertical">
 
     <TextView
-        android:id="@+id/text_view_main_server_info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"/>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="250dp">
-        <TextView
-            android:id="@+id/text_view_main_server_messages"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-    </ScrollView>
-
-    <EditText
-        android:id="@+id/edit_text_main_connect_ip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Server IP" />
-
-    <EditText
-        android:id="@+id/edit_text_main_connect_port"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Server port" />
-
-    <Button
-        android:id="@+id/button_main_start_connect"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Connect" />
-
-    <TextView
+        android:text="PISH APP"
         android:id="@+id/text_view_main_response"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+    <Button android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="start"/>
+
+    <Button android:id="@+id/stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="stop"/>
 </LinearLayout>
