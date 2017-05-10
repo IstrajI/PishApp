@@ -11,7 +11,7 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 public class Server {
-   /* private final int PORT = 8080;
+    private final int PORT = 8080;
     private MainActivity activity;
     private ServerSocket serverSocket;
     private String message = "";
