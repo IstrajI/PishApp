@@ -7,9 +7,12 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.fourthline.cling.android.AndroidUpnpService;
@@ -27,30 +30,40 @@ import org.fourthline.cling.model.meta.ModelDetails;
 import org.fourthline.cling.model.types.DeviceType;
 import org.fourthline.cling.model.types.UDADeviceType;
 import org.fourthline.cling.model.types.UDN;
+
 import java.net.URI;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, DevicesAdapter.DevicesClickLister {
     private String TAG = "Pish";
-    private TextView outputTextView;
     private Button startSearchButton;
     private Button registerButtton;
+    private RecyclerView devicesListRecyclerView;
+
+    private EditText deviceNameEditText;
+    public TextView consoleTextView;
+
+
+    private Server server;
     private BrowseRegistryListener registryListener;
     private AndroidUpnpService upnpBrowseService;
     private AndroidUpnpService upnpRegistrationService;
+    private DevicesAdapter devicesAdapter;
 
     private ServiceConnection registrationService = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             upnpRegistrationService = (AndroidUpnpService) service;
-                try {
-                    LocalDevice binaryLightDevice = createDevice();
-                    upnpRegistrationService.getRegistry().addDevice(binaryLightDevice);
-                } catch (Exception ex) {
-                    Log.d(TAG, "Creating BinaryLight device failed", ex);
-                    return;
-                }
+            try {
+                final String deviceName = deviceNameEditText.getText().toString();
+
+                LocalDevice binaryLightDevice = createDevice(deviceName);
+                upnpRegistrationService.getRegistry().addDevice(binaryLightDevice);
+            } catch (Exception ex) {
+                Log.d(TAG, "Creating BinaryLight device failed", ex);
+                return;
+            }
         }
+
         public void onServiceDisconnected(ComponentName className) {
             upnpBrowseService = null;
         }
@@ -59,13 +72,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ServiceConnection browseService = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             upnpBrowseService = (AndroidUpnpService) service;
-            for (Device device : upnpBrowseService.getRegistry().getDevices()) {
-                outputTextView.setText(""+device.getDisplayString());
-            }
-            outputTextView.setText("");
             upnpBrowseService.getRegistry().addListener(registryListener);
             upnpBrowseService.getControlPoint().search();
         }
+
         public void onServiceDisconnected(ComponentName className) {
             upnpBrowseService = null;
         }
@@ -82,8 +92,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         registryListener = initListener();
 
-        outputTextView = (TextView) findViewById(R.id.text_view_main3_output);
-        outputTextView.setText("");
+        deviceNameEditText = (EditText) findViewById(R.id.edit_text_main3_name);
+
+        consoleTextView = (TextView) findViewById(R.id.text_view_main3_console);
 
         startSearchButton = (Button) findViewById(R.id.button_main3_start_search);
         startSearchButton.setOnClickListener(this);
@@ -91,11 +102,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         registerButtton = (Button) findViewById(R.id.button_main3_register);
         registerButtton.setOnClickListener(this);
 
-        getApplicationContext().bindService(
+        devicesListRecyclerView = (RecyclerView) findViewById(R.id.recycler_view_main3_devices_list);
+        final LinearLayoutManager devicesListLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+        devicesAdapter = new DevicesAdapter();
+        devicesAdapter.setDevicesClickLister(this);
+        devicesListRecyclerView.setLayoutManager(devicesListLayoutManager);
+        devicesListRecyclerView.setAdapter(devicesAdapter);
+
+        server = new Server(this);
+        server.start();
+
+        Log.d("starting_server", "" + Utills.getIp() + ":" + Utills.getPort());
+
+
+/*        getApplicationContext().bindService(
                 new Intent(this, AndroidUpnpServiceImpl.class),
                 browseService,
                 Context.BIND_AUTO_CREATE
-        );
+        );*/
     }
 
     @Override
@@ -109,12 +133,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        switch(v.getId()) {
+        switch (v.getId()) {
             case R.id.button_main3_start_search:
-                if (upnpBrowseService == null)
-                    break;
-                upnpBrowseService.getRegistry().removeAllRemoteDevices();
-                upnpBrowseService.getControlPoint().search();
+                startService(new Intent(this, AndroidUpnpServiceImpl.class));
+                Log.d("search", "" + "pish");
+                getApplicationContext().bindService(
+                        new Intent(this, AndroidUpnpServiceImpl.class),
+                        browseService,
+                        Context.BIND_AUTO_CREATE
+                );
                 break;
 
             case R.id.button_main3_register:
@@ -123,37 +150,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         registrationService,
                         Context.BIND_AUTO_CREATE
                 );
-            break;
+                break;
         }
     }
 
-    private LocalDevice createDevice() throws ValidationException, LocalServiceBindingException {
+    private LocalDevice createDevice(final String deviceName) throws ValidationException, LocalServiceBindingException {
+
         final UDN udn = new UDN(UUID.randomUUID());
         final DeviceType type = new UDADeviceType("BinaryLight", 1);
         final DeviceDetails details = new DeviceDetails(
                 "Friendly Binary Light",
-                new ManufacturerDetails("ACME"),
-                new ModelDetails("AndroidLight", "A light with on/off switch.", "v1"),
+                new ManufacturerDetails("PISH"),
+                new ModelDetails(deviceName, "A light with on/off switch.", "v1"),
                 createDeviceURI());
-        return new LocalDevice(new DeviceIdentity(udn),type,details,(LocalService)null);
+        LocalDevice localDevice = new LocalDevice(new DeviceIdentity(udn), type, details, (LocalService) null);
+        Log.d("local_device_created", "" + localDevice.getDetails().getPresentationURI());
+        return localDevice;
     }
 
     private URI createDeviceURI() {
         final String ip = Utills.getIp();
         final int port = Utills.getPort();
-        return URI.create("http://pish@"+ip+":"+port+"/pish?pish#pish)");
+        return URI.create("http://pish@" + ip + ":" + port + "/pish?pish#pish)");
     }
 
     private BrowseRegistryListener initListener() {
-         return new BrowseRegistryListener() {
+        return new BrowseRegistryListener() {
             @Override
             public void showMessage(final String message) {
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        outputTextView.setText(outputTextView.getText() + message +"\n");
+                        consoleTextView.setText(consoleTextView.getText() + message + "\n");
+                    }
+                });
+            }
+
+            @Override
+            public void addDevice(final Device device) {
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        if (device.getDetails().getPresentationURI() == null) {
+                            consoleTextView.setText(consoleTextView.getText() + "Cant add device with URI == null \n");
+                            return;
+                        }
+                        devicesAdapter.add(new DeviceModel(device));
+                    }
+                });
+            }
+
+            @Override
+            public void removeDevice(final Device device) {
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        if (device.getDetails().getPresentationURI() == null) return;
+                        devicesAdapter.remove(new DeviceModel(device));
                     }
                 });
             }
         };
+    }
+
+    @Override
+    public void onItemClick(final View view, final int position, final RecyclerView.Adapter adapter) {
+        final DeviceModel item = ((DevicesAdapter) adapter).getItemByPosition(position);
+        final Client client = new Client(item.getIp(),
+                Integer.parseInt(item.getPort()),
+                consoleTextView);
+        client.execute();
     }
 }

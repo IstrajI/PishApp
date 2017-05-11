@@ -59,7 +59,7 @@ public class Client extends AsyncTask<Void, Void, Void>{
 
     @Override
     protected void onPostExecute(Void results) {
-        responseTextView.setText(response);
+        responseTextView.setText(responseTextView.getText() + response +"\n");
         super.onPostExecute(results);
     }
 }
