@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private EditText deviceNameEditText;
     public TextView consoleTextView;
-
+    private TextView infoTextView;
 
     private Server server;
     private BrowseRegistryListener registryListener;
@@ -96,8 +96,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         consoleTextView = (TextView) findViewById(R.id.text_view_main3_console);
 
-        startSearchButton = (Button) findViewById(R.id.button_main3_start_search);
-        startSearchButton.setOnClickListener(this);
+        infoTextView = (TextView) findViewById(R.id.text_view_main3_info);
+
+        //startSearchButton = (Button) findViewById(R.id.button_main3_start_search);
+        //startSearchButton.setOnClickListener(this);
 
         registerButtton = (Button) findViewById(R.id.button_main3_register);
         registerButtton.setOnClickListener(this);
@@ -112,14 +114,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         server = new Server(this);
         server.start();
 
+        infoTextView.setText(Utills.getIp() +"   " +Utills.getPort());
         Log.d("starting_server", "" + Utills.getIp() + ":" + Utills.getPort());
 
 
-/*        getApplicationContext().bindService(
+        getApplicationContext().bindService(
                 new Intent(this, AndroidUpnpServiceImpl.class),
                 browseService,
                 Context.BIND_AUTO_CREATE
-        );*/
+        );
     }
 
     @Override
@@ -134,15 +137,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.button_main3_start_search:
-                startService(new Intent(this, AndroidUpnpServiceImpl.class));
+            //case R.id.button_main3_start_search:
+/*                startService(new Intent(this, AndroidUpnpServiceImpl.class));
                 Log.d("search", "" + "pish");
                 getApplicationContext().bindService(
                         new Intent(this, AndroidUpnpServiceImpl.class),
                         browseService,
                         Context.BIND_AUTO_CREATE
                 );
-                break;
+                break;*/
 
             case R.id.button_main3_register:
                 getApplicationContext().bindService(

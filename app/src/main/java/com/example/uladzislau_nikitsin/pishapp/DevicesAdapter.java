@@ -45,16 +45,25 @@ public class DevicesAdapter extends RecyclerView.Adapter<DevicesAdapter.ViewHold
 
     public void add(final DeviceModel device) {
         Log.d("pishpish", "yes");
-        this.devices.add(device);
+
         for (DeviceModel deviceModel: devices) {
-            Log.d("device", ""+device.getName());
+            if (deviceModel.getIp() == device.getIp()) {
+                return;
+            }
         }
+        this.devices.add(device);
         notifyDataSetChanged();
     }
 
     public void remove(final DeviceModel device) {
-        devices.remove(device);
-        notifyDataSetChanged();
+        for (DeviceModel deviceModel: devices) {
+            if (deviceModel.getIp() == device.getIp()) {
+                devices.remove(device);
+                notifyDataSetChanged();
+            }
+        }
+
+
     }
 
     public DeviceModel getItemByPosition(final int position) {
