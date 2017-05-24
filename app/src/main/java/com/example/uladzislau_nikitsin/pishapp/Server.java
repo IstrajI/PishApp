@@ -1,5 +1,7 @@
 package com.example.uladzislau_nikitsin.pishapp;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -84,7 +86,7 @@ public class Server {
                 printStream.close();
 
                 message += "replayed: " + replyMessage + "\n";
-
+                Log.d("testingthis", ""+message);
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

@@ -33,6 +33,8 @@ import org.fourthline.cling.model.types.UDN;
 
 import java.net.URI;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, DevicesAdapter.DevicesClickLister {
     private String TAG = "Pish";
@@ -55,8 +57,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             upnpRegistrationService = (AndroidUpnpService) service;
             try {
                 final String deviceName = deviceNameEditText.getText().toString();
+                LocalDevice binaryLightDevice = createDevice("Horizon Device");
 
-                LocalDevice binaryLightDevice = createDevice(deviceName);
                 upnpRegistrationService.getRegistry().addDevice(binaryLightDevice);
             } catch (Exception ex) {
                 Log.d(TAG, "Creating BinaryLight device failed", ex);
@@ -90,6 +92,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 new FixedAndroidLogHandler()
         );
 
+        Logger.getLogger("org.fourthline.cling").setLevel(Level.FINEST);
+
         registryListener = initListener();
 
         deviceNameEditText = (EditText) findViewById(R.id.edit_text_main3_name);
@@ -98,8 +102,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         infoTextView = (TextView) findViewById(R.id.text_view_main3_info);
 
-        //startSearchButton = (Button) findViewById(R.id.button_main3_start_search);
-        //startSearchButton.setOnClickListener(this);
+        startSearchButton = (Button) findViewById(R.id.button_main3_start_search);
+        startSearchButton.setOnClickListener(this);
 
         registerButtton = (Button) findViewById(R.id.button_main3_register);
         registerButtton.setOnClickListener(this);
@@ -128,16 +132,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //reg
+        try{
+            getApplicationContext().unbindService(registrationService);
+            getApplicationContext().unbindService(browseService);
+        } catch (IllegalArgumentException e){
+            System.out.println("Unbinding didn't work. little surprise");
+        }
+        //browse
         if (upnpBrowseService != null) {
             upnpBrowseService.getRegistry().removeListener(registryListener);
         }
-        getApplicationContext().unbindService(browseService);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            //case R.id.button_main3_start_search:
+            case R.id.button_main3_start_search:
 /*                startService(new Intent(this, AndroidUpnpServiceImpl.class));
                 Log.d("search", "" + "pish");
                 getApplicationContext().bindService(
@@ -160,14 +171,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private LocalDevice createDevice(final String deviceName) throws ValidationException, LocalServiceBindingException {
 
         final UDN udn = new UDN(UUID.randomUUID());
-        final DeviceType type = new UDADeviceType("BinaryLight", 1);
+        final DeviceType type = new UDADeviceType("UPC Hzn Gateway", 1);
         final DeviceDetails details = new DeviceDetails(
-                "Friendly Binary Light",
-                new ManufacturerDetails("PISH"),
-                new ModelDetails(deviceName, "A light with on/off switch.", "v1"),
+                "MyCustomDevice",
+                new ManufacturerDetails("Liberty Global"),
+                new ModelDetails("UPC Hzn Gateway", "UPC Hzn Gateway", "v1"),
                 createDeviceURI());
         LocalDevice localDevice = new LocalDevice(new DeviceIdentity(udn), type, details, (LocalService) null);
         Log.d("local_device_created", "" + localDevice.getDetails().getPresentationURI());
+
+        Log.d("friendly name", ""+localDevice.getDetails().getFriendlyName());
+        Log.d("manufacturer name", ""+localDevice.getDetails().getManufacturerDetails().getManufacturer());
+        Log.d("model name", ""+localDevice.getDetails().getModelDetails().getModelName());
+        Log.d("device type", ""+localDevice.getType().getType());
+        Log.d("device type namespace ", ""+localDevice.getType().getNamespace());
+
+        Log.d("uuid", ""+udn.getIdentifierString());
+
+
+
+
         return localDevice;
     }
 

@@ -75,6 +75,11 @@
         android:layout_height="2dp"
         android:background="#E0E0E0"/>
 
+    <Button
+        android:layout_width="match_parent"
+        android:id="@+id/button_main3_start_search"
+        android:layout_height="wrap_content"/>
+
     <android.support.v7.widget.RecyclerView
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"

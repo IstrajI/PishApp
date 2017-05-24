@@ -1,5 +1,7 @@
 package com.example.uladzislau_nikitsin.pishapp;
 
+import android.util.Log;
+
 import org.fourthline.cling.model.meta.Device;
 import org.fourthline.cling.model.meta.LocalDevice;
 import org.fourthline.cling.model.meta.RemoteDevice;
@@ -24,19 +26,20 @@ abstract class BrowseRegistryListener extends DefaultRegistryListener {
 
     @Override
     public void remoteDeviceRemoved(Registry registry, RemoteDevice device) {
-        //showMessage("Remote device removed " +device.getDisplayString()+ " " +device.getDetails().getPresentationURI().getPort());
+
+        showMessage("Remote device removed " +device.getDisplayString()+ " ");
         removeDevice(device);
     }
 
     @Override
     public void localDeviceAdded(Registry registry, LocalDevice device) {
-        showMessage("Local device added " +device.getDisplayString()+ " " +device.getDetails().getPresentationURI().getPort());
+        showMessage("Local device added " +device.getDisplayString()+ " ");
         addDevice(device);
     }
 
     @Override
     public void localDeviceRemoved(Registry registry, LocalDevice device) {
-        //showMessage("Local device removed " +device.getDisplayString()+ " " +device.getDetails().getBaseURL().getPort());
+        showMessage("Local device removed " +device.getDisplayString()+ " " +device.getDetails().getBaseURL().getPort());
         removeDevice(device);
     }
 
